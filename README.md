@@ -1,1 +1,1 @@
-# example-package
+Project created for study Python 
