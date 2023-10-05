@@ -1,2 +1,1 @@
-# micro-videos-app
-Project of study 
+# example-package
