@@ -1,0 +1,14 @@
+[project]
+name = ""
+version = ""
+description = ""
+authors = [
+    {name = "José.Silva", email = "joserock35@gmail.com"},
+]
+dependencies = [
+    "autopep8>=2.0.4",
+]
+requires-python = ">=3.10"
+readme = "README.md"
+license = {text = "MIT"}
+
