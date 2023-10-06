@@ -1,5 +1,6 @@
 from abc import ABC
 from dataclasses import asdict, dataclass, field
+from typing import Any
 from __seedwork.domain.value_objects import UniqueEntityId
 
 @dataclass(frozen=True)
@@ -16,3 +17,7 @@ class Entity(ABC):
         entity_dict.pop('unique_entity_id')
         entity_dict['id']=self.id
         return entity_dict
+    
+    def _set(self,name:str,value:Any):
+        object.__setattr__(self,name,value)
+        return self

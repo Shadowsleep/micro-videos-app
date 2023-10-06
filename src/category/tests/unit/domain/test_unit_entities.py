@@ -11,3 +11,18 @@ class TestCategoryUnit(unittest.TestCase):
             value_object=Category(name='teste')
             value_object.name='teste'
                         
+    def test_update(self):
+        value_object=Category(name='teste')
+        value_object.update('teste1', 'teste2')
+        self.assertEqual(value_object.name,'teste1')
+        self.assertEqual(value_object.description,'teste2')
+
+    def test_is_active(self):
+        value_object=Category(name='teste',is_active=False)
+        value_object.activate()
+        self.assertTrue(value_object.is_active)
+    
+    def test_is_deactive(self):
+        value_object=Category(name='teste')
+        value_object.deactivate()
+        self.assertFalse(value_object.is_active)
