@@ -1,6 +1,7 @@
+from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import Any
-
+from typing import Any, Dict, Generic, List, TypeVar
+from rest_framework.serializers import Serializer
 from __seedwork.domain.exceptions import ValidationException
 
 
@@ -32,3 +33,32 @@ class ValidatorRules:
         if self.value is not None and self.value is not True and self.value is not False:
             raise ValidationException(f'the {self.prop} must be a boolean')
         return self
+    
+
+PropsValidated=TypeVar('PropsValidated')
+ErrosFields=Dict[str,List[str]]
+
+@dataclass(slots=True)
+class ValidatorFieldsAbc(ABC,Generic[PropsValidated]):
+    errors:ErrosFields
+    validated_data: PropsValidated
+
+    @abstractmethod
+    def Validate(self, data:Any) -> bool:
+        raise NotImplementedError()
+    
+class DRFValidator(ValidatorFieldsAbc[PropsValidated]):
+    def Validate(self, data: Serializer) -> bool:
+        serializer=data
+        is_valid=serializer.is_valid()
+
+        if not is_valid:
+            self.errors={
+                field: [str(_error) for _error in _errors]
+                for field,_errors in serializer.errors.items()
+            }
+          
+            return False
+        else:
+            self.validated_data=serializer.validated_data
+            return True
