@@ -1,6 +1,6 @@
 
 from typing import Any
-from __seedwork.domain.validators import DRFValidator
+from __seedwork.domain.validators import DRFValidator, ErrosFields, PropsValidated
 from rest_framework import serializers;
 
 
@@ -18,4 +18,4 @@ class CategoryValidator(DRFValidator):
 class CategoryValidatorFactory:
     @staticmethod
     def create():
-        return CategoryValidator()
+        return CategoryValidator(errors=ErrosFields,validated_data=PropsValidated)

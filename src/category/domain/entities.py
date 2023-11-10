@@ -2,6 +2,7 @@ from datetime import datetime
 from dataclasses import dataclass, field
 from typing import Any, Optional
 from __seedwork.domain.entities import Entity
+from __seedwork.domain.exceptions import EntityValidationException
 from __seedwork.domain.validators import ValidatorRules
 from category.domain.validators import CategoryValidatorFactory
 
@@ -14,7 +15,7 @@ class Category (Entity):
     created_at: Optional[datetime] = field(
         default_factory=lambda: datetime.now())
 
-    def __post__init__(self):
+    def __post_init__(self):
         if not self.created_at:
             self._set('created_at',datetime.now())
 
@@ -32,4 +33,7 @@ class Category (Entity):
 
     def validate(self):
         validator=CategoryValidatorFactory.create()
-        validator.Validate(self.to_dict())
+        is_valid =validator.Validate(self.to_dict())
+        if not is_valid:
+            raise EntityValidationException(validator.errors)
+

@@ -49,8 +49,10 @@ class ValidatorFieldsAbc(ABC,Generic[PropsValidated]):
     @abstractmethod
     def Validate(self, data:Any) -> bool:
         raise NotImplementedError()
-    
+
+
 class DRFValidator(ValidatorFieldsAbc[PropsValidated]):
+    
     def Validate(self, data: Serializer) -> bool:
         serializer=data
         is_valid=serializer.is_valid()

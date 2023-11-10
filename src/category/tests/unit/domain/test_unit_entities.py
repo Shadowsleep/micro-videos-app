@@ -29,3 +29,4 @@ class TestCategoryUnit(unittest.TestCase):
         value_object=Category(name='teste')
         value_object.deactivate()
         self.assertFalse(value_object.is_active)
+    
