@@ -1,4 +1,5 @@
-from abc import ABC, abstractmethod
+from abc import ABC
+import abc
 from dataclasses import dataclass
 from typing import Any, Dict, Generic, List, TypeVar
 from django.conf import settings
@@ -46,7 +47,7 @@ class ValidatorFieldsAbc(ABC,Generic[PropsValidated]):
     errors:ErrosFields
     validated_data: PropsValidated
 
-    @abstractmethod
+    @abc.abstractmethod
     def Validate(self, data:Any) -> bool:
         raise NotImplementedError()
 

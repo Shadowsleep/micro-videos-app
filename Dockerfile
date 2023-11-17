@@ -10,7 +10,7 @@ RUN pip install pdm
 #RUN pip install pdm
 
 #usar o user criado
-USER python
+#USER python
 
 #especifica o caminho q vai ficar a aplicação no container
 WORKDIR /home/python/app
