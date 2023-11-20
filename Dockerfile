@@ -3,11 +3,9 @@ FROM python:3.10.2-slim
 RUN apt update && apt install -y --no-install-recommends default-jre
 
 #por motivo de segurança é bom criar um user ae nao trabalhar com o root
-RUN useradd -ms /bin/bash python
+#RUN useradd -ms /bin/bash python
 
 RUN pip install pdm
-
-#RUN pip install pdm
 
 #usar o user criado
 #USER python
