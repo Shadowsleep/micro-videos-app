@@ -1,7 +1,7 @@
 from abc import ABC
 import abc
 from dataclasses import dataclass, field
-from typing import Generic, List, Optional, TypeVar
+from typing import Any, Generic, List, Optional, TypeVar
 from __seedwork.domain.entities import Entity
 from __seedwork.domain.exceptions import NotFoundException
 
@@ -46,6 +46,7 @@ class SearchableRepository(Generic[ET, Input, Output], Repository[ET], ABC):
 
 Filter = TypeVar('Filter')
 
+
 @dataclass(slots=True, kw_only=True)
 class SearchParams(Generic[Filter]):
     page: Optional[int] = 1
@@ -62,19 +63,41 @@ class SearchParams(Generic[Filter]):
         self._normalize_filter()
 
     def _normalize_page(self):
-        pass
-    
+        page = self._convert_to_int(self.page)
+        if page <= 0:
+            page = self._get_dataclass_field('page').default
+        self.page = page
+
     def _normalize_per_page(self):
-        pass
-    
+        per_page = self._convert_to_int(self.per_page)
+        if per_page < 1:
+            per_page = self._get_dataclass_field('per_page').default
+        self.per_page = per_page
+
     def _normalize_sort(self):
-        pass
+        self.sort = None if self.sort == "" or self.sort is None else str(
+            self.sort)
 
     def _normalize_sort_dir(self):
-        pass
+        if not self.sort:
+            self.sort_dir = None
+            return
+        sort_dir = str(self.sort_dir).lower()
+        self.sort_dir = 'asc' if sort_dir not in ['asc','desc'] else sort_dir
 
     def _normalize_filter(self):
-        pass
+        self.filter = None if self.filter == "" or self.filter is None else str(
+            self.filter)
+
+    def _convert_to_int(self, value: Any, default=0) -> int:
+        try:
+            return int(value)
+        except (ValueError, TypeError):
+            return default
+
+    def _get_dataclass_field(self, field_name):
+        return SearchParams.__dataclass_fields__[field_name]
+
 
 @dataclass(slots=True)
 class InMemoryRepository(Repository[ET], ABC):

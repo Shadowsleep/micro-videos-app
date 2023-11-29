@@ -22,7 +22,6 @@
 		"vscode":{
 			"extensions":[
 				"ms-python.python",
-				"sonarsource.sonarlint-vscode",
 				"ms-python.autopep8"
 			]
 		}
