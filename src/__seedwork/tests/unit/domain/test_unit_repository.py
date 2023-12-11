@@ -1,9 +1,9 @@
 from dataclasses import dataclass
-from typing import Optional
+from typing import List, Optional
 import unittest
 from __seedwork.domain.entities import Entity
 from __seedwork.domain.exceptions import NotFoundException
-from __seedwork.domain.repositories import Filter, InMemoryRepository, Repository, SearchParams
+from __seedwork.domain.repositories import ET, Filter, InMemoryRepository, Repository, SearchParams, SearchResult
 from __seedwork.domain.value_objects import UniqueEntityId
 
 
@@ -120,3 +120,75 @@ class TestSearchParams(unittest.TestCase):
             print(i)
             params = SearchParams(per_page=i['per_page'])
             self.assertEqual(params.per_page, i['expected'])
+
+
+class TestSearchResult(unittest.TestCase):
+    
+    def test_props_annotation(self):
+        self.assertEqual(SearchResult.__annotations__, {
+            'items': List[ET],
+            'total': int,
+            'current_page': int,
+            'per_page': int,
+            'last_page': int,
+            'sort': Optional[str],
+            'sort_dir': Optional[str],
+            'filter': Optional[Filter] 
+        })
+
+    def test_constructor(self):
+        entity=StubEntity(name='teste',price=5)
+        result=SearchResult(
+            items=[entity,entity],
+            total=4,
+            current_page=1,
+            per_page=2,
+        )
+        self.assertEqual(result.to_dict(), {
+            'items':[entity,entity],
+            'total':4,
+            'current_page':1,
+            'per_page':2,
+            'last_page':2,
+            'sort':None,
+            'sort_dir':None,
+            'filter':None
+        })
+
+        result=SearchResult(
+            items=[entity,entity],
+            total=4,
+            current_page=1,
+            per_page=2,
+            sort='name',
+            sort_dir='asc'
+        )
+        self.assertEqual(result.to_dict(), {
+            'items':[entity,entity],
+            'total':4,
+            'current_page':1,
+            'per_page':2,
+            'last_page':2,
+            'sort':'name',
+            'sort_dir':'asc',
+            'filter':None
+        })
+
+    def test_when_per_page_is_greater_than_total(self):
+        result=SearchResult(
+            items=[],
+            total=4,
+            current_page=1,
+            per_page=20,
+        )
+        self.assertEqual(result.last_page,1)
+    
+    def test_when_per_page_is_less_than_total_and_they_not_are_multiples(self):
+        result=SearchResult(
+            items=[],
+            total=101,
+            current_page=1,
+            per_page=20,
+        )
+        self.assertEqual(result.last_page,6)
+    
