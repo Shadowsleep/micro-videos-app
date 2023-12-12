@@ -40,9 +40,46 @@ Output = TypeVar('Output')
 
 class SearchableRepository(Generic[ET, Input, Output], Repository[ET], ABC):
 
+    sortable_fields: List[str] = []
+
     @abc.abstractmethod
     def search(self, input_params: Input) -> Output:
         raise NotImplementedError()
+
+
+@dataclass(slots=True)
+class InMemoryRepository(Repository[ET], ABC):
+    items: List[ET] = field(default_factory=lambda: [])
+
+    def insert(self, entity: ET) -> None:
+        self.items.append(entity)
+
+    def find_by_id(self, entity_id: str | UniqueEntityId) -> ET:
+        id_str = str(entity_id)
+        return self._get(id_str)
+
+    def find_all(self) -> List[ET]:
+        return self.items
+
+    def update(self, entity: ET) -> None:
+        entity = self._get(entity_id=entity.id)
+        index = self.items.index(entity)
+        self.items[index] = entity
+
+    def delete(self, entity_id: str | UniqueEntityId) -> None:
+        id_str = str(entity_id)
+        entity = self._get(id_str)
+        self.items.remove(entity)
+
+    def _get(self, entity_id: str):
+        try:
+            entity = next(filter(lambda i: i.id == entity_id, self.items))
+            if not entity:
+                raise NotFoundException(
+                    f"Entity not found with id '{entity_id}'")
+            return entity
+        except:
+            raise NotFoundException(f"Entity not found with id '{entity_id}'")
 
 
 Filter = TypeVar('Filter')
@@ -128,48 +165,14 @@ class SearchResult(Generic[ET, Filter]):
         }
 
 
-@dataclass(slots=True)
-class InMemoryRepository(Repository[ET], ABC):
-    items: List[ET] = field(default_factory=lambda: [])
-
-    def insert(self, entity: ET) -> None:
-        self.items.append(entity)
-
-    def find_by_id(self, entity_id: str | UniqueEntityId) -> ET:
-        id_str = str(entity_id)
-        return self._get(id_str)
-
-    def find_all(self) -> List[ET]:
-        return self.items
-
-    def update(self, entity: ET) -> None:
-        entity = self._get(entity_id=entity.id)
-        index = self.items.index(entity)
-        self.items[index] = entity
-
-    def delete(self, entity_id: str | UniqueEntityId) -> None:
-        id_str = str(entity_id)
-        entity = self._get(id_str)
-        self.items.remove(entity)
-
-    def _get(self, entity_id: str):
-        try:
-            entity = next(filter(lambda i: i.id == entity_id, self.items))
-            if not entity:
-                raise NotFoundException(
-                    f"Entity not found with id '{entity_id}'")
-            return entity
-        except:
-            raise NotFoundException(f"Entity not found with id '{entity_id}'")
-
-
 class InMemorySearchableRepository(
     Generic[ET, Filter],
     InMemoryRepository[ET],
-    SearchableRepository[ET, SearchParams[Filter], SearchResult[filter]]
+    SearchableRepository[ET, SearchParams[Filter], SearchResult[ET, Filter]],
+    ABC
 ):
 
-    def search(self, input_params: SearchParams[Filter]) -> SearchResult[filter]:
+    def search(self, input_params: SearchParams[Filter]) -> SearchResult[ET, Filter]:
         items_filtered = self._apply_filter(self.items, input_params.filter)
         items_sorted = self._apply_sort(
             items_filtered, input_params.sort, input_params.sort_dir)
@@ -186,11 +189,17 @@ class InMemorySearchableRepository(
             filter=input_params.filter
         )
 
-    def _apply_filter(self, items, filter: Filter | None):
-        pass
+    @abc.abstractmethod
+    def _apply_filter(self, items: List[ET], filter_param: Filter | None) -> List[ET]:
+        raise NotImplementedError()
 
-    def _apply_sort(self, items, sort: str | None, sort_dir: str | None):
-        pass
+    def _apply_sort(self, items: List[ET], sort: str | None, sort_dir: str | None) -> List[ET]:
+        if sort and sort in self.sortable_fields:
+            is_reverse = sort_dir == 'desc'
+            return sorted(items, key=lambda item: getattr(item, sort), reverse=is_reverse)
+        return items
 
-    def _apply_paginate(self, items, page: int, per_page: int):
-        pass
+    def _apply_paginate(self, items: List[ET], page: int, per_page: int) -> List[ET]:
+        start = (page - 1) * per_page
+        stop = start + per_page
+        return items[slice(start, stop)]

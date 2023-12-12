@@ -1,10 +1,11 @@
 from abc import ABC
 import abc
 from dataclasses import dataclass
-from typing import Any, Dict, Generic, List, TypeVar
 from django.conf import settings
 from rest_framework.serializers import Serializer
 from __seedwork.domain.exceptions import ValidationException
+from typing import Any, Dict, Generic, List, TypeVar
+
 
 if not settings.configured:
     settings.configure(USE_I18N=False)
