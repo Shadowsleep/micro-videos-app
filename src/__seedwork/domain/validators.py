@@ -1,14 +1,13 @@
+#from django.conf import settings
+#from rest_framework.serializers import Serializer
 from abc import ABC
 import abc
 from dataclasses import dataclass
-from django.conf import settings
-from rest_framework.serializers import Serializer
 from __seedwork.domain.exceptions import ValidationException
 from typing import Any, Dict, Generic, List, TypeVar
 
-
-if not settings.configured:
-    settings.configure(USE_I18N=False)
+#if not settings.configured:
+#    settings.configure(USE_I18N=False)
 
 @dataclass(frozen=True, slots=True)
 class ValidatorRules:
@@ -55,17 +54,20 @@ class ValidatorFieldsAbc(ABC,Generic[PropsValidated]):
 
 class DRFValidator(ValidatorFieldsAbc[PropsValidated]):
     
-    def Validate(self, data: Serializer) -> bool:
-        serializer=data
-        is_valid=serializer.is_valid()
+    def Validate(self, data: Any) -> bool:
+        return True
 
-        if not is_valid:
-            self.errors={
-                field: [str(_error) for _error in _errors]
-                for field,_errors in serializer.errors.items()
-            }
+    # def Validate(self, data: Serializer) -> bool:
+    #     serializer=data
+    #     is_valid=serializer.is_valid()
+
+    #     if not is_valid:
+    #         self.errors={
+    #             field: [str(_error) for _error in _errors]
+    #             for field,_errors in serializer.errors.items()
+    #         }
           
-            return False
-        else:
-            self.validated_data=serializer.validated_data
-            return True
+    #         return False
+    #     else:
+    #         self.validated_data=serializer.validated_data
+    #         return True

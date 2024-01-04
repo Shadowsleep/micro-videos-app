@@ -5,3 +5,5 @@
 # objeto de valors são imutaveis, nao podendo ter obj.nome=nome, e geralmente de o comportamento de medir, quantificar ou descrever algo.   
 
 # conceito de seed work foi proposto por Michal Feathers
+
+# caminho onde está o PDM /home/python/.local/bin/pdm 

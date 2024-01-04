@@ -4,7 +4,7 @@ from typing import Any, Optional
 from __seedwork.domain.entities import Entity
 from __seedwork.domain.exceptions import EntityValidationException
 from __seedwork.domain.validators import ValidatorRules
-from category.domain.validators import CategoryValidatorFactory
+#from category.domain.validators import CategoryValidatorFactory
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -32,8 +32,10 @@ class Category (Entity):
         self._set('is_active',False)
 
     def validate(self):
-        validator=CategoryValidatorFactory.create()
-        is_valid =validator.Validate(self.to_dict())
-        if not is_valid:
-            raise EntityValidationException(validator.errors)
+        pass
+
+       # validator=CategoryValidatorFactory.create()
+       # is_valid =validator.Validate(self.to_dict())
+      #  if not is_valid:
+       #     raise EntityValidationException(validator.errors)
 

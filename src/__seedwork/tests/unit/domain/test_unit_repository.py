@@ -198,10 +198,10 @@ class stubInMemorySearchableRepository(InMemorySearchableRepository[StubEntity, 
 
     def _apply_filter(self, items: List[StubEntity], filter_param: str | None) -> List[StubEntity]:
         if filter_param:
-            filter_obj= filter(lambda item: filter_param.lower() in item.name.lower()
-                   or filter_param == str(item.price), items)
+            filter_obj = filter(lambda item: filter_param.lower() in item.name.lower()
+                                or filter_param == str(item.price), items)
             return list(filter_obj)
-        
+
         return items
 
 
@@ -213,58 +213,137 @@ class TestInMemorySearchableRepository(unittest.TestCase):
         self.repo = stubInMemorySearchableRepository()
 
     def test__apply_filter(self):
-        items= [StubEntity(name='teste',price=5)]
-        result = self.repo._apply_filter(items=items,filter_param=None)
-        self.assertEqual(result,items)
+        items = [StubEntity(name='teste', price=5)]
+        result = self.repo._apply_filter(items=items, filter_param=None)
+        self.assertEqual(result, items)
 
-        items= [
-            StubEntity(name='teste',price=5),
-            StubEntity(name='tEsTe 1',price=5),
-            StubEntity(name='TESTE 2',price=3),
-            StubEntity(name='Fake',price=2),
-            StubEntity(name='OI',price=1)
-            ]
-        
-        result = self.repo._apply_filter(items=items,filter_param='teste')
-        self.assertEqual(len(result),3)
+        items = [
+            StubEntity(name='teste', price=5),
+            StubEntity(name='tEsTe 1', price=5),
+            StubEntity(name='TESTE 2', price=3),
+            StubEntity(name='Fake', price=2),
+            StubEntity(name='OI', price=1)
+        ]
 
-        result = self.repo._apply_filter(items=items,filter_param='5')
-        self.assertEqual(len(result),2)
-    
-    
+        result = self.repo._apply_filter(items=items, filter_param='teste')
+        self.assertEqual(len(result), 3)
+
+        result = self.repo._apply_filter(items=items, filter_param='5')
+        self.assertEqual(len(result), 2)
+
     def test__apply_sort(self):
-        items= [
-            StubEntity(name='B',price=5),
-            StubEntity(name='A 1',price=0),
-            ]
-        
-        result = self.repo._apply_sort(items=items,sort='name',sort_dir='asc')
-        self.assertEqual([items[1],items[0]],result)
+        items = [
+            StubEntity(name='B', price=5),
+            StubEntity(name='A 1', price=0),
+        ]
 
-        result = self.repo._apply_sort(items=items,sort='price',sort_dir='asc')
-        self.assertEqual(items,result)
+        result = self.repo._apply_sort(
+            items=items, sort='name', sort_dir='asc')
+        self.assertEqual([items[1], items[0]], result)
 
-        result = self.repo._apply_sort(items=items,sort='name',sort_dir='desc')
-        self.assertEqual(items,result)
+        result = self.repo._apply_sort(
+            items=items, sort='price', sort_dir='asc')
+        self.assertEqual(items, result)
 
+        result = self.repo._apply_sort(
+            items=items, sort='name', sort_dir='desc')
+        self.assertEqual(items, result)
 
     def test__apply_paginate(self):
-        items= [
-            StubEntity(name='teste',price=5),
-            StubEntity(name='tEsTe 1',price=5),
-            StubEntity(name='TESTE 2',price=3),
-            StubEntity(name='Fake',price=2),
-            StubEntity(name='OI',price=1)
-            ]
-        
-        result = self.repo._apply_paginate(items=items,page=1,per_page=2)
-        self.assertEqual([items[0],items[1]],result)
+        items = [
+            StubEntity(name='teste', price=5),
+            StubEntity(name='tEsTe 1', price=5),
+            StubEntity(name='TESTE 2', price=3),
+            StubEntity(name='Fake', price=2),
+            StubEntity(name='OI', price=1)
+        ]
 
-        result = self.repo._apply_paginate(items=items,page=2,per_page=2)
-        self.assertEqual([items[2],items[3]],result)
+        result = self.repo._apply_paginate(items=items, page=1, per_page=2)
+        self.assertEqual([items[0], items[1]], result)
 
-        result = self.repo._apply_paginate(items=items,page=3,per_page=2)
-        self.assertEqual([items[4]],result)
+        result = self.repo._apply_paginate(items=items, page=2, per_page=2)
+        self.assertEqual([items[2], items[3]], result)
 
-        result = self.repo._apply_paginate(items=items,page=4,per_page=2)
-        self.assertEqual([],result)
+        result = self.repo._apply_paginate(items=items, page=3, per_page=2)
+        self.assertEqual([items[4]], result)
+
+        result = self.repo._apply_paginate(items=items, page=4, per_page=2)
+        self.assertEqual([], result)
+
+    def test_search_when_params_is_empty(self):
+        entity = StubEntity(name='teste 01', price=5)
+        items = [entity] * 18
+        self.repo.items = items
+
+        result= self.repo.search(SearchParams())
+
+        self.assertEqual(result, SearchResult(
+            items = [entity] * 15,
+            total=18,
+            current_page=1,
+            per_page=15,
+            sort=None,
+            sort_dir=None,
+            filter=None
+        ))
+
+    def test_search_apllying_filter_and_paginate(self):
+        items = [
+            StubEntity(name='teste 01', price=15)
+            ,StubEntity(name='TESTE 02', price=51)
+            ,StubEntity(name='TeSte 03', price=51)
+            ,StubEntity(name='AB 04', price=15)
+            ,StubEntity(name='AaAa 01', price=35)
+            ,StubEntity(name='TesT AAA 01', price=53)
+            ,StubEntity(name='AA 01', price=52)
+            ,StubEntity(name='cachumba', price=15)
+        ]
+        self.repo.items = items
+
+        result= self.repo.search(SearchParams(page=1,per_page=2,filter='TEST'))
+
+        self.assertEqual(result, SearchResult(
+            items = [items[0],items[1]],
+            total=4,
+            current_page=1,
+            per_page=2,
+            sort=None,
+            sort_dir=None,
+            filter='TEST'
+        ))
+
+        result= self.repo.search(SearchParams(page=2,per_page=2,filter='TEST'))
+
+        self.assertEqual(result, SearchResult(
+            items = [items[2],items[5]],
+            total=4,
+            current_page=2,
+            per_page=2,
+            sort=None,
+            sort_dir=None,
+            filter='TEST'
+        ))
+
+        result= self.repo.search(SearchParams(page=2,per_page=2,filter='AA'))
+
+        self.assertEqual(result, SearchResult(
+            items = [items[6]],
+            total=3,
+            current_page=2,
+            per_page=2,
+            sort=None,
+            sort_dir=None,
+            filter='AA'
+        ))
+
+        result= self.repo.search(SearchParams(page=4,per_page=2,filter='AA'))
+
+        self.assertEqual(result, SearchResult(
+            items = [],
+            total=3,
+            current_page=4,
+            per_page=2,
+            sort=None,
+            sort_dir=None,
+            filter='AA'
+        ))

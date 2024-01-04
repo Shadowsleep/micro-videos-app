@@ -1,9 +1,9 @@
 [project]
-name = ""
-version = ""
+name = "micro-videos-app"
+version = "0.1.0"
 description = ""
 authors = [
-    {name = "José.Silva", email = "joserock35@gmail.com"},
+    {name = "José Silva", email = "jose.silva@gmail.com"},
 ]
 dependencies = [
     "autopep8>=2.0.4",
@@ -13,3 +13,6 @@ requires-python = ">=3.10"
 readme = "README.md"
 license = {text = "MIT"}
 
+[build-system]
+requires = ["pdm-backend"]
+build-backend = "pdm.backend"
